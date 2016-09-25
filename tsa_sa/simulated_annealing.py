@@ -7,13 +7,15 @@ class sim_ann:
     cities = []
     individual = []
     optimal = 0
+    rend = False
 
     def __init__(self, fname):
         self.load_cities(fname)
 
     def run(self):
         res = self.individual.simulated_annealing()
-        plot_res(res, self.optimal)
+        if self.rend:
+            plot_res(res, self.optimal)
         return self.individual
 
     def load_cities(self, fname):
@@ -47,6 +49,8 @@ class sim_ann:
                 self.individual.nr_swaps = int(val)
             elif par == 'o':
                 self.optimal = float(val)
+            elif par == 'x':
+                self.rend = True
 
 
 def make_sim_ann(fname):
