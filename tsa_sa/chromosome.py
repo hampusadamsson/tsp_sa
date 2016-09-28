@@ -5,14 +5,16 @@ import copy
 class Chromosome:
     # GA / SA
     cities = []
+
     fit = 1
+    dist_matrix = []
+
+    group_size = 1
 
     # SA
     runs = 10000
     temp = 1
     cooling_dec = 0.999
-    nr_swaps = 1
-    cur_gen = 1
 
     def calc_solution(self):
         if len(self.cities) == 0:
@@ -21,8 +23,7 @@ class Chromosome:
         distance = 0
         for c in self.cities:
             cur_city = c
-            distance += cur_city.calc_dist_euc2d(prev_city)
-#             distance += cur_city.calc_dist_euc2d_swift(prev_city)
+            distance += self.dist_matrix[cur_city.id][prev_city.id]
             prev_city = cur_city
         self.fit = distance
 
@@ -36,25 +37,55 @@ class Chromosome:
             text_file.write(str(c.id) + '\n')
         text_file.close()
 
+    def local_search(self):
+        res = []
+
+        best = 9999999
+        best_c = []
+
+        # EVERY STARTING POINT GREEDY
+        for i in range(0, len(self.cities)-1):
+            print len(self.cities)-i
+
+            c1 = self.cities.pop(i)
+            heap = [c1]
+            while len(self.cities) > 0:
+                c2 = self.find_close(c1, self.cities)
+                self.cities.remove(c2)
+                assert c2 not in self.cities
+                assert c2 not in heap
+                heap.append(c2)
+                c1 = c2
+
+            self.cities = heap
+            self.calc_solution()
+            res.append(self.fit)
+
+            if self.fit < best:
+                best = self.fit
+                best_c = copy.copy(self.cities)
+
+        self.cities = best_c
+        self.calc_solution()
+
+        return res
+
     def simulated_annealing(self):
-        new_ind = create_ind(self.cities)
+        new_ind = create_ind(self.cities, self.dist_matrix)
         self.calc_solution()
         res = []
 
         for r in range(0, self.runs):
-            changes = []
-            for t in range(0, self.nr_swaps):
-                r1, r2 = new_ind.mutate()
-                changes.insert(0, [r1, r2])
+            #  sim ann
+            r1, r2 = new_ind.mutate()
             if new_ind.fit < self.fit or uniform(0, 1) < self.temp:
-                for r1, r2 in changes:
-                    self.swap(r2, r1)
+                self.swap(r2, r1)
                 self.fit = new_ind.fit
                 self.cooling()
             else:
-                for r1, r2 in changes:
-                    new_ind.swap(r2, r1)
+                new_ind.swap(r2, r1)
             res.append(new_ind.fit)
+
         return res
 
     #  swaps 2 cities
@@ -70,21 +101,32 @@ class Chromosome:
         self.calc_solution()
         return rand1, rand2
 
-    def swapclose(self):
-        rand = randint(0, len(self.cities) - 1)
-        prox = self.cities[rand].close_neigh(self.cities)
-        inspos = self.cities.index(prox)
-        cit = self.cities.pop(rand)
-        self.cities.insert(inspos, cit)
-
     def cooling(self):
-        #self.temp *= self.cooling_dec
-        self.cur_gen *= self.cooling_dec
-        self.temp = 1/self.cur_gen
+        self.temp *= self.cooling_dec
+
+    def rank_select(self, pop):
+        total = sum(range(0, len(pop) + 1))
+        r = uniform(0, total)
+        tot = 0
+        for c in range(1, len(pop) + 1):
+            if tot + c >= r:
+                return pop[c - 1]
+            tot += c
+
+    def find_close(self, cit1, popu):
+        res = 0
+        best = 99999999
+        for c in popu:
+            if self.dist_matrix[cit1.id][c.id] < best:
+                best = self.dist_matrix[cit1.id][c.id]
+                res = c
+        return res
 
 
-def create_ind(cities):
+def create_ind(cities, d_m):
     new_ind = Chromosome()
     new_ind.cities = copy.deepcopy(cities)
+    new_ind.heap = copy.deepcopy(cities)
+    new_ind.dist_matrix = d_m
     return new_ind
 
