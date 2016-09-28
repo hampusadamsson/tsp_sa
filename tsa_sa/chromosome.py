@@ -46,6 +46,7 @@ class Chromosome:
         # EVERY STARTING POINT GREEDY
         for i in range(0, len(self.cities)-1):
             print len(self.cities)-i
+            print best
 
             c1 = self.cities.pop(i)
             heap = [c1]
