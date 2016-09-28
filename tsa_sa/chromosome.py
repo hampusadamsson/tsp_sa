@@ -64,6 +64,7 @@ class Chromosome:
             if self.fit < best:
                 best = self.fit
                 best_c = copy.copy(self.cities)
+                self.save_sol()
 
         self.cities = best_c
         self.calc_solution()
