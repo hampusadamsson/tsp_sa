@@ -50,21 +50,21 @@ class Chromosome:
     def two_opt_swap(self, i, k):
         l1 = []
         l2 = []
+
         for x in range(0, i):
-            l1.append(self.cities[0])
-            self.cities.pop(0)
-        for y in range(0, k%len(self.cities)):
-            l2.insert(0, self.cities[0])
-            self.cities.pop(0)
+            l1.append(self.cities.pop(0))
+        for y in range(0, k):
+            if len(self.cities) <= 0:
+                break
+            l2.insert(0, self.cities.pop(0))
+
         self.cities = l1+l2+self.cities
 
     def two_opt(self):
         res = []
         swaps = len(self.cities)-1
         # repeat WHILE
-
-#        self.shuffle()
-
+        #self.shuffle()
         self.calc_solution()
         best = self.fit
         res.append(best)
