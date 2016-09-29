@@ -14,8 +14,10 @@ class sim_ann:
 
     def run(self):
 
+        #res = self.individual.local_search()
         #res = self.individual.simulated_annealing()
-        res = self.individual.local_search()
+        res = self.individual.two_opt()
+
         if self.rend:
             plot_res(res, self.optimal)
         return self.individual

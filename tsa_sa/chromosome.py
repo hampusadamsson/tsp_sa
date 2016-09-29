@@ -27,6 +27,17 @@ class Chromosome:
             prev_city = cur_city
         self.fit = distance
 
+    def calc_tour_solution(self, tour):
+        assert len(tour) > 0
+        prev_city = tour[-1]
+        distance = 0
+        for c in tour:
+            cur_city = c
+            distance += self.dist_matrix[cur_city.id][prev_city.id]
+            prev_city = cur_city
+        self.fit = distance
+
+
     def shuffle(self):
         shuffle(self.cities)
         self.calc_solution()
@@ -37,6 +48,42 @@ class Chromosome:
             text_file.write(str(c.id) + '\n')
         text_file.close()
 
+    def two_opt_swap(self, i, k):
+        l1 = []
+        l2 = []
+        for x in range(0, i):
+            l1.append(self.cities[0])
+            self.cities.pop(0)
+        for y in range(0, k%len(self.cities)):
+            l2.insert(0, self.cities[0])
+            self.cities.pop(0)
+        self.cities = l1+l2+self.cities
+
+    def two_opt(self):
+        res = []
+        swaps = len(self.cities)-1
+        # repeat WHILE
+        self.calc_solution()
+        best = self.fit
+        res.append(best)
+        improves = True
+
+        while improves:
+            print best
+            improves = False
+            for i in range(0, swaps):
+                for k in range(i+1, swaps):
+                    self.two_opt_swap(i, k)
+                    self.calc_solution()
+                    res.append(best)
+                    if self.fit < best:
+                        best = self.fit
+                        self.save_sol()
+                        improves = True
+                    else:
+                        self.two_opt_swap(i, k)
+        return res
+
     def local_search(self):
         res = []
 
@@ -45,8 +92,8 @@ class Chromosome:
 
         # EVERY STARTING POINT GREEDY
         for i in range(0, len(self.cities)-1):
-            print len(self.cities)-i
-            print best
+            #print len(self.cities)-i
+            #print best
 
             c1 = self.cities.pop(i)
             heap = [c1]
