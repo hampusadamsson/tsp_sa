@@ -37,7 +37,6 @@ class Chromosome:
             prev_city = cur_city
         self.fit = distance
 
-
     def shuffle(self):
         shuffle(self.cities)
         self.calc_solution()
@@ -63,16 +62,23 @@ class Chromosome:
         res = []
         swaps = len(self.cities)-1
         # repeat WHILE
+
+#        self.shuffle()
+
         self.calc_solution()
         best = self.fit
         res.append(best)
         improves = True
 
+        gen = 0
         while improves:
-            print best
+            gen += 1
+            print str(gen) + ":" + str(best)
+
             improves = False
             for i in range(0, swaps):
                 for k in range(i+1, swaps):
+                    rev_back = copy.copy(self.cities)
                     self.two_opt_swap(i, k)
                     self.calc_solution()
                     res.append(best)
@@ -81,7 +87,7 @@ class Chromosome:
                         self.save_sol()
                         improves = True
                     else:
-                        self.two_opt_swap(i, k)
+                        self.cities = rev_back
         return res
 
     def local_search(self):
@@ -91,7 +97,7 @@ class Chromosome:
         best_c = []
 
         # EVERY STARTING POINT GREEDY
-        for i in range(0, len(self.cities)-1):
+        for i in range(len(self.cities)-1, 0, -1):
             #print len(self.cities)-i
             #print best
 
