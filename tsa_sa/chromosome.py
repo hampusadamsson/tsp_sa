@@ -6,7 +6,7 @@ class Chromosome:
     # GA / SA
     cities = []
 
-    fit = 1
+    fit = -1
     dist_matrix = []
 
     group_size = 1
@@ -15,6 +15,7 @@ class Chromosome:
     runs = 10000
     temp = 1
     cooling_dec = 0.999
+    gen = 1
 
     def calc_solution(self):
         if len(self.cities) == 0:
@@ -63,8 +64,6 @@ class Chromosome:
     def two_opt(self):
         res = []
         swaps = len(self.cities)-1
-        # repeat WHILE
-        #self.shuffle()
         self.calc_solution()
         best = self.fit
         res.append(best)
@@ -73,8 +72,6 @@ class Chromosome:
         gen = 0
         while improves:
             gen += 1
-            print str(gen) + ":" + str(best)
-
             improves = False
             for i in range(0, swaps):
                 for k in range(i+1, swaps):
@@ -98,9 +95,6 @@ class Chromosome:
 
         # EVERY STARTING POINT GREEDY
         for i in range(len(self.cities)-1, 0, -1):
-            #print len(self.cities)-i
-            #print best
-
             c1 = self.cities.pop(i)
             heap = [c1]
             while len(self.cities) > 0:
@@ -122,14 +116,40 @@ class Chromosome:
 
         self.cities = best_c
         self.calc_solution()
-
         return res
 
+    def simulated_annealing_two_opt(self):
+        self.calc_solution()
+        best = self.fit
+
+        cool = []
+        res = []
+        for r in range(0, self.runs):
+            i = randint(0, len(self.cities) - 2)
+            k = randint(0, len(self.cities)-i)
+
+            rev_back = copy.copy(self.cities)
+            self.two_opt_swap(i, k)
+            self.calc_solution()
+
+            if best > self.fit or uniform(0, 1) < self.temp:
+                best = self.fit
+            else:
+                self.cities = rev_back
+                self.fit = best
+                res.append(best)
+                self.save_sol()
+                cool.append(30000*self.temp)
+                print best
+            self.cooling()
+
+        self.fit = best
+        return res, cool
+
     def simulated_annealing(self):
+        res = []
         new_ind = create_ind(self.cities, self.dist_matrix)
         self.calc_solution()
-        res = []
-
         for r in range(0, self.runs):
             #  sim ann
             r1, r2 = new_ind.mutate()
@@ -158,15 +178,7 @@ class Chromosome:
 
     def cooling(self):
         self.temp *= self.cooling_dec
-
-    def rank_select(self, pop):
-        total = sum(range(0, len(pop) + 1))
-        r = uniform(0, total)
-        tot = 0
-        for c in range(1, len(pop) + 1):
-            if tot + c >= r:
-                return pop[c - 1]
-            tot += c
+#        self.gen *= 1.0001
 
     def find_close(self, cit1, popu):
         res = 0

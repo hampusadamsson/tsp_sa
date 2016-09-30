@@ -1,6 +1,7 @@
 from chromosome import create_ind
 from city import make_city
-from plot import plot_res
+from plot import plot_res, plot_res2
+
 
 class sim_ann:
     cities = []
@@ -8,18 +9,27 @@ class sim_ann:
     optimal = 0
     rend = False
     dist_matrix = []
+    function = "s"
 
     def __init__(self, fname):
         self.load_cities(fname)
 
     def run(self):
+        res = []
 
-        #res = self.individual.local_search()
-        #res = self.individual.simulated_annealing()
-        res = self.individual.two_opt()
+        if self.function == "l":
+            res = self.individual.local_search()
+        elif self.function == "s":
+            res = self.individual.simulated_annealing()
+        elif self.function == "a":
+            res, cool = self.individual.simulated_annealing_two_opt()
+        elif self.function == "t":
+            res = self.individual.two_opt()
 
         if self.rend:
             plot_res(res, self.optimal)
+#            plot_res2(res, cool, self.optimal)
+
         return self.individual
 
     def load_cities(self, fname):
@@ -65,6 +75,8 @@ class sim_ann:
                 self.individual.group_size = int(val)
             elif par == 'x':
                 self.rend = True
+            elif par == 'z':
+                self.function = val
 
 
 def make_sim_ann(fname):

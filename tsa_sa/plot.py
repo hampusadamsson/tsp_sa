@@ -1,10 +1,20 @@
 import matplotlib.pyplot as plt
 
 
-def plot_res(val, opt):
-    optimal = opt
-    plt.plot(val, color='b')
-    plt.plot([optimal]*len(val), color='r')
+def plot_res(val1, optimal):
+    plt.plot(val1, color='g')
+    plt.plot(([int(optimal)] * len(val1)), color='r')
     plt.ylabel('Fitness')
-    plt.xlabel('Best: ' + str(val[len(val)-1]))
+    plt.xlabel('Generations')
+
+    plt.show()
+
+
+def plot_res2(val1, val2, optimal):
+    plt.plot(val1, color='b')
+    plt.plot(val2, color='g')
+    plt.plot(([int(optimal)] * len(val1)), color='r')
+    plt.ylabel('Fitness')
+    plt.xlabel('Generations & temperature')
+
     plt.show()
